@@ -8,12 +8,15 @@ from collections import deque
 from pathlib import Path
 
 import numpy as np
+import cv2
 from PIL import Image, ImageDraw, ImageFilter
 
 
 SOURCE = Path("/private/tmp/pulsework-cow-strip-alpha.png")
 OUTPUT = Path(__file__).parent / "final" / "cow-eating-strip.png"
-SMOOTH_OUTPUT = Path(__file__).parent / "final" / "cow-eating-60.webp"
+SMOOTH_OUTPUT = Path(__file__).parent / "final" / "cow-eating-flow.webp"
+RIG_BASE_OUTPUT = Path(__file__).parent / "final" / "cow-rig-base.png"
+RIG_JAW_OUTPUT = Path(__file__).parent / "final" / "cow-rig-jaw.png"
 FRAME_COUNT = 6
 CROP_TOP = 225
 CROP_BOTTOM = 470
@@ -86,14 +89,59 @@ def main() -> None:
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
     strip.save(OUTPUT, optimize=True)
 
+    # A compositor-driven website rig is visually steadier than interpolating
+    # between large pose changes. Pose 3 already carries grass in the mouth.
+    rig_base = rgba_frames[3]
+    rig_base.save(RIG_BASE_OUTPUT, optimize=True)
+    jaw = Image.new("RGBA", rig_base.size, (0, 0, 0, 0))
+    jaw_box = (45, 52, 151, 126)
+    jaw_patch = rig_base.crop(jaw_box)
+    jaw_mask = Image.new("L", jaw_patch.size, 0)
+    ImageDraw.Draw(jaw_mask).ellipse((4, 5, jaw_patch.width - 4, jaw_patch.height - 3), fill=235)
+    jaw_mask = jaw_mask.filter(ImageFilter.GaussianBlur(5))
+    jaw.paste(jaw_patch, jaw_box[:2], jaw_mask)
+    jaw.save(RIG_JAW_OUTPUT, optimize=True)
+
     # Build a lightweight tweened WebP for the homepage. Premultiplied-alpha
     # interpolation avoids pale edge halos while softening the six key poses.
+    flow_cache: dict[tuple[int, int], tuple[np.ndarray, np.ndarray]] = {}
+
     def tween(first: Image.Image, second: Image.Image, amount: float) -> Image.Image:
+        """Motion-compensated interpolation instead of a cross-dissolve."""
         a = np.asarray(first).astype(np.float32) / 255
         b = np.asarray(second).astype(np.float32) / 255
-        alpha = a[..., 3:4] * (1 - amount) + b[..., 3:4] * amount
-        premultiplied = a[..., :3] * a[..., 3:4] * (1 - amount) + b[..., :3] * b[..., 3:4] * amount
-        rgb = np.divide(premultiplied, np.maximum(alpha, 1e-6))
+        cache_key = (id(first), id(second))
+
+        if cache_key not in flow_cache:
+            def grayscale_on_white(rgba: np.ndarray) -> np.ndarray:
+                alpha = rgba[..., 3:4]
+                rgb = rgba[..., :3] * alpha + (1 - alpha)
+                return cv2.cvtColor((rgb * 255).astype(np.uint8), cv2.COLOR_RGB2GRAY)
+
+            gray_a = grayscale_on_white(a)
+            gray_b = grayscale_on_white(b)
+            params = dict(pyr_scale=.5, levels=5, winsize=31, iterations=5, poly_n=7, poly_sigma=1.5, flags=0)
+            flow_cache[cache_key] = (
+                cv2.calcOpticalFlowFarneback(gray_a, gray_b, None, **params),
+                cv2.calcOpticalFlowFarneback(gray_b, gray_a, None, **params),
+            )
+
+        flow_ab, flow_ba = flow_cache[cache_key]
+        height, width = a.shape[:2]
+        grid_x, grid_y = np.meshgrid(np.arange(width, dtype=np.float32), np.arange(height, dtype=np.float32))
+
+        def warp(rgba: np.ndarray, flow: np.ndarray, distance: float) -> np.ndarray:
+            map_x = grid_x - flow[..., 0] * distance
+            map_y = grid_y - flow[..., 1] * distance
+            premult = rgba.copy()
+            premult[..., :3] *= premult[..., 3:4]
+            return cv2.remap(premult, map_x, map_y, cv2.INTER_CUBIC, borderMode=cv2.BORDER_CONSTANT)
+
+        warped_a = warp(a, flow_ab, amount)
+        warped_b = warp(b, flow_ba, 1 - amount)
+        mixed = warped_a * (1 - amount) + warped_b * amount
+        alpha = np.clip(mixed[..., 3:4], 0, 1)
+        rgb = np.divide(mixed[..., :3], np.maximum(alpha, 1e-6))
         result = np.concatenate((rgb, alpha), axis=2)
         return Image.fromarray(np.clip(result * 255, 0, 255).astype(np.uint8), "RGBA")
 
@@ -156,6 +204,8 @@ def main() -> None:
     )
     print(OUTPUT)
     print(SMOOTH_OUTPUT)
+    print(RIG_BASE_OUTPUT)
+    print(RIG_JAW_OUTPUT)
 
 
 if __name__ == "__main__":
