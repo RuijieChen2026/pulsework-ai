@@ -92,26 +92,30 @@ def main() -> None:
         return Image.fromarray(np.clip(result * 255, 0, 255).astype(np.uint8), "RGBA")
 
     timeline: list[Image.Image] = []
+    fps = 30
 
-    def hold(index: int, count: int) -> None:
-        timeline.extend([rgba_frames[index]] * count)
+    def hold(index: int, seconds: float) -> None:
+        timeline.extend([rgba_frames[index]] * round(seconds * fps))
 
-    def move(start: int, end: int, count: int) -> None:
+    def move(start: int, end: int, seconds: float) -> None:
+        count = round(seconds * fps)
         for step in range(1, count + 1):
-            timeline.append(tween(rgba_frames[start], rgba_frames[end], step / count))
+            linear = step / count
+            eased = linear * linear * (3 - 2 * linear)
+            timeline.append(tween(rgba_frames[start], rgba_frames[end], eased))
 
-    hold(0, 6)
-    move(0, 1, 4)
-    move(1, 2, 4)
-    hold(2, 8)
-    move(2, 3, 4)
-    hold(3, 4)
-    move(3, 4, 4)
-    hold(4, 5)
-    move(4, 5, 4)
-    hold(5, 3)
-    move(5, 4, 3)
-    move(4, 0, 4)
+    hold(0, .65)
+    move(0, 1, .42)
+    move(1, 2, .38)
+    hold(2, .72)
+    move(2, 3, .42)
+    hold(3, .36)
+    move(3, 4, .32)
+    hold(4, .55)
+    move(4, 5, .32)
+    hold(5, .22)
+    move(5, 4, .24)
+    move(4, 0, .36)
 
     timeline = [frame.resize((300, 203), Image.Resampling.LANCZOS) for frame in timeline]
 
@@ -119,10 +123,10 @@ def main() -> None:
         SMOOTH_OUTPUT,
         save_all=True,
         append_images=timeline[1:],
-        duration=72,
+        duration=33,
         loop=0,
         lossless=False,
-        quality=76,
+        quality=72,
         method=3,
     )
     print(OUTPUT)
