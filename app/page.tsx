@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowRight, ArrowUp, BarChart3, BookOpen, Bot, BrainCircuit, Check, CheckCircle2, ChevronDown, CircleDot, Clock3, Command, FileCheck2, FileText, Gauge, GitBranch, HomeIcon, LayoutGrid, LockKeyhole, MessageSquareText, MoreHorizontal, Plus, Search, ShieldCheck, Sparkles, Target, Users, Workflow, X } from 'lucide-react';
+import { AlertTriangle, ArrowRight, ArrowUp, BarChart3, BookOpen, Bot, BrainCircuit, Check, CheckCircle2, ChevronDown, CircleDot, Clock3, Command, Database, Eye, FileCheck2, FileText, Gauge, GitBranch, HomeIcon, LayoutGrid, LockKeyhole, MessageSquareText, MoreHorizontal, Play, Plus, Receipt, RotateCcw, Search, ShieldCheck, Sparkles, Target, UserCheck, Users, Workflow, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -14,8 +14,9 @@ const quickActions = [
 export default function Home() {
   const [query, setQuery] = useState('');
   const [sent, setSent] = useState(false);
+  const [approved, setApproved] = useState(false);
   const [view, setView] = useState<'product' | 'case' | 'eval'>('product');
-  const submit = () => { if (query.trim()) setSent(true); };
+  const submit = () => { if (query.trim()) { setSent(true); setApproved(false); } };
 
   if (view === 'case') return <CaseStudy onNavigate={setView} />;
   if (view === 'eval') return <Evaluation onNavigate={setView} />;
@@ -50,7 +51,8 @@ export default function Home() {
           <Badge variant="outline" className="ml-3 border-emerald-200 bg-emerald-50 text-[10px] text-emerald-700"><span className="size-1.5 rounded-full bg-emerald-500" /> 12 个工具已连接</Badge>
           <div className="ml-auto flex items-center gap-2"><Button variant="ghost" size="icon" aria-label="搜索"><Search /></Button><Button variant="ghost" size="icon" aria-label="更多"><MoreHorizontal /></Button><div className="ml-1 grid size-8 place-items-center rounded-full bg-[#dbe7df] text-xs font-semibold text-[#2d4638]">RC</div></div>
         </header>
-        <div className="mx-auto flex w-full max-w-[980px] flex-col px-5 pb-10 pt-[clamp(56px,9vh,96px)] md:px-10">
+        <div className={`mx-auto flex w-full flex-col px-5 pb-10 md:px-10 ${sent ? 'max-w-[1120px] pt-8' : 'max-w-[980px] pt-[clamp(56px,9vh,96px)]'}`}>
+          {sent ? <AgentRun query={query} approved={approved} onApprove={() => setApproved(true)} onReset={() => { setSent(false); setApproved(false); setQuery(''); }} /> : <>
           <div className="max-w-2xl">
             <Badge className="mb-5 bg-[#e7f0ea] text-[#335b43] hover:bg-[#e7f0ea]"><Sparkles className="size-3" /> 基于企业上下文的智能协作</Badge>
             <h1 className="text-[clamp(2.25rem,5vw,4.2rem)] font-semibold leading-[1.02] tracking-[-0.055em] text-[#18251e]">今天想完成什么？</h1>
@@ -64,12 +66,19 @@ export default function Home() {
               </button>
             ))}
           </div>
-          {sent && <div className="mt-7 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-sm text-emerald-900"><div className="flex items-center gap-2 font-medium"><CheckCircle2 className="size-4" /> 任务已进入规划阶段</div><p className="mt-1.5 pl-6 text-xs leading-5 text-emerald-800/75">Agent 正在检索制度与你的待办上下文，执行前会先展示步骤。</p></div>}
+          <button onClick={() => { setQuery('我明天去深圳出差，这张 680 元的酒店发票能报销吗？可以的话帮我提交。'); setSent(true); }} className="mt-4 flex w-full items-center gap-4 rounded-2xl border border-[#c9d8ce] bg-[#eaf1ec] p-4 text-left transition hover:border-primary/35 hover:bg-[#e3ede6]">
+            <div className="grid size-10 shrink-0 place-items-center rounded-full bg-primary text-white"><Play className="ml-0.5 size-4 fill-current" /></div>
+            <div><div className="text-sm font-semibold text-[#294536]">体验完整 Agent 流程</div><div className="mt-0.5 text-xs text-[#5d7465]">从政策检索、发票核验到人工确认提交 · 约 30 秒</div></div>
+            <ArrowRight className="ml-auto size-4 text-primary" />
+          </button>
+          </>}
+          {!sent && <>
           <div className="mt-6 rounded-[22px] border border-border bg-white p-2 shadow-[0_18px_70px_rgba(38,54,44,.10)] focus-within:border-primary/35 focus-within:ring-4 focus-within:ring-primary/5">
             <textarea value={query} onChange={(e) => { setQuery(e.target.value); setSent(false); }} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }} rows={3} placeholder="问制度、找文档，或交给我一项工作…" className="w-full resize-none bg-transparent px-3.5 pt-3 text-[15px] leading-6 outline-none placeholder:text-muted-foreground/60" aria-label="向工作助手提问" />
             <div className="flex items-center gap-2 px-1.5 pb-1.5"><Button variant="ghost" size="sm" className="rounded-lg text-muted-foreground"><Plus /> 添加上下文</Button><div className="ml-auto flex items-center gap-2 text-[11px] text-muted-foreground"><Command className="size-3" /> Enter 发送</div><Button onClick={submit} disabled={!query.trim()} size="icon" className="rounded-xl"><ArrowUp /></Button></div>
           </div>
           <div className="mt-3 flex items-center justify-center gap-4 text-[11px] text-muted-foreground/65"><span className="flex items-center gap-1"><ShieldCheck className="size-3" /> 权限感知</span><span className="flex items-center gap-1"><Clock3 className="size-3" /> 可回溯</span><span className="flex items-center gap-1"><CheckCircle2 className="size-3" /> 高风险操作需确认</span></div>
+          </>}
         </div>
       </section>
     </main>
@@ -77,6 +86,33 @@ export default function Home() {
 }
 
 type View = 'product' | 'case' | 'eval';
+
+function AgentRun({ query, approved, onApprove, onReset }: { query: string; approved: boolean; onApprove: () => void; onReset: () => void }) {
+  const trace = [
+    { icon: BrainCircuit, label: '识别意图与风险', detail: '制度问答 + 报销提交 · 写操作需确认', time: '84ms' },
+    { icon: Database, label: '检索企业知识', detail: '命中 8 个片段，Rerank 后保留 3 条', time: '420ms' },
+    { icon: Receipt, label: '解析与校验发票', detail: '金额 ¥680 · 增值税电子普票 · 未检测到重复', time: '610ms' },
+    { icon: ShieldCheck, label: '运行权限与合规检查', detail: '用户 P5 / 深圳 / 普通差旅标准', time: '96ms' },
+  ];
+  return <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="flex items-center justify-between"><div><div className="text-xs font-semibold uppercase tracking-[.16em] text-muted-foreground">Live agent trace</div><h1 className="mt-2 text-3xl font-semibold tracking-[-.04em]">任务执行记录</h1></div><Button onClick={onReset} variant="outline" className="rounded-xl"><RotateCcw /> 重新体验</Button></div>
+    <div className="mt-7 grid gap-5 lg:grid-cols-[.72fr_1.28fr]">
+      <aside className="rounded-[22px] border border-border bg-[#1d2a22] p-5 text-white shadow-xl shadow-[#1d2a22]/10">
+        <div className="flex items-center justify-between"><div className="flex items-center gap-2 text-sm font-semibold"><span className="relative flex size-2"><span className="absolute inline-flex size-full animate-ping rounded-full bg-emerald-400 opacity-60"/><span className="relative size-2 rounded-full bg-emerald-400"/></span> Agent Trace</div><Badge className="bg-white/10 text-[10px] text-white hover:bg-white/10">4.8s</Badge></div>
+        <div className="mt-6 space-y-1">{trace.map(({icon:Icon,label,detail,time},i)=><div key={label} className="relative flex gap-3 pb-5 last:pb-0"><div className="relative z-10 grid size-8 shrink-0 place-items-center rounded-lg border border-white/10 bg-white/[.07]"><Icon className="size-3.5 text-[#9fd0ad]"/></div>{i<trace.length-1&&<div className="absolute bottom-0 left-[15px] top-8 w-px bg-white/10"/>}<div className="min-w-0 pt-0.5"><div className="flex items-center gap-2 text-xs font-medium"><CheckCircle2 className="size-3 text-emerald-400"/>{label}<span className="ml-auto text-[9px] text-white/35">{time}</span></div><div className="mt-1.5 text-[10px] leading-4 text-white/45">{detail}</div></div></div>)}</div>
+        <div className="mt-6 rounded-xl border border-white/10 bg-black/10 p-3"><div className="flex items-center gap-2 text-[10px] uppercase tracking-[.12em] text-white/35"><Eye className="size-3"/> Observability</div><div className="mt-3 grid grid-cols-3 gap-2 text-center"><div><div className="text-sm font-semibold">3,842</div><div className="text-[9px] text-white/35">tokens</div></div><div><div className="text-sm font-semibold">¥0.018</div><div className="text-[9px] text-white/35">cost</div></div><div><div className="text-sm font-semibold">0</div><div className="text-[9px] text-white/35">risk flags</div></div></div></div>
+      </aside>
+      <section className="space-y-4">
+        <div className="ml-auto max-w-[85%] rounded-2xl rounded-tr-md bg-[#e6ece7] px-4 py-3 text-sm leading-6">{query}</div>
+        <div className="rounded-[22px] border border-border bg-white p-6 shadow-[0_15px_45px_rgba(32,49,39,.06)]">
+          <div className="flex items-start gap-3"><div className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-white"><Sparkles className="size-4"/></div><div><div className="text-sm font-semibold">可以报销，但需要你确认后提交。</div><p className="mt-3 text-sm leading-6 text-[#526158]">你的目的地是深圳，P5 员工住宿标准为每晚不超过 <strong className="text-foreground">¥700</strong>。该发票金额为 <strong className="text-foreground">¥680</strong>，在标准内；发票折号、日期与抬头均已校验。</p></div></div>
+          <div className="mt-5 grid gap-2 sm:grid-cols-2"><div className="rounded-xl border border-border bg-[#fafbf9] p-3"><div className="flex items-center gap-2 text-xs font-medium"><FileText className="size-3.5 text-primary"/>《国内差旅及费用制度》</div><div className="mt-2 text-[10px] leading-4 text-muted-foreground">第 4.2 节 · 一线及新一线城市住宿标准…</div><div className="mt-2 text-[9px] text-emerald-700">版本 v3.4 · 2026-07-01 生效</div></div><div className="rounded-xl border border-border bg-[#fafbf9] p-3"><div className="flex items-center gap-2 text-xs font-medium"><Receipt className="size-3.5 text-primary"/>invoice_0828.pdf</div><div className="mt-2 flex gap-4 text-[10px] text-muted-foreground"><span>金额 ¥680</span><span>税率 6%</span><span>置信 98%</span></div><div className="mt-2 text-[9px] text-emerald-700">真伪校验通过 · 未重复</div></div></div>
+        </div>
+        {!approved ? <div className="rounded-[22px] border-2 border-[#d7a55f]/35 bg-[#fffaf1] p-5"><div className="flex items-start gap-3"><div className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#f1dfbf] text-[#8b5a1f]"><UserCheck className="size-4"/></div><div className="flex-1"><div className="flex items-center gap-2 text-sm font-semibold">需要你确认 <Badge className="bg-[#f3e3c8] text-[9px] text-[#875a26] hover:bg-[#f3e3c8]">写操作</Badge></div><p className="mt-1.5 text-xs leading-5 text-[#745d40]">将在费用系统创建 ¥680 差旅报销单，并发送给直属上级李明审批。</p><div className="mt-4 flex gap-2"><Button onClick={onApprove} className="rounded-xl bg-[#8b5a1f] px-4 hover:bg-[#704819]"><Check/> 确认并提交</Button><Button variant="outline" className="rounded-xl bg-white">修改信息</Button></div></div></div></div> : <div className="rounded-[22px] border border-emerald-200 bg-emerald-50 p-5"><div className="flex items-start gap-3"><div className="grid size-9 shrink-0 place-items-center rounded-full bg-emerald-600 text-white"><Check className="size-4"/></div><div><div className="text-sm font-semibold text-emerald-950">报销申请已创建</div><p className="mt-1 text-xs text-emerald-800">单号 BX-2026-09184 · 等待李明审批 · 预计 1 个工作日</p><div className="mt-3 flex items-center gap-3 text-[10px] text-emerald-700"><span>查看详情 ↗</span><span>已写入审计日志</span></div></div></div></div>}
+      </section>
+    </div>
+  </div>;
+}
 
 function PortfolioNav({ active, onNavigate }: { active: View; onNavigate: (view: View) => void }) {
   return (
