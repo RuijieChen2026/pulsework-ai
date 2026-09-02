@@ -8,12 +8,12 @@ from collections import deque
 from pathlib import Path
 
 import numpy as np
-from PIL import Image, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter
 
 
 SOURCE = Path("/private/tmp/pulsework-cow-strip-alpha.png")
 OUTPUT = Path(__file__).parent / "final" / "cow-eating-strip.png"
-SMOOTH_OUTPUT = Path(__file__).parent / "final" / "cow-eating-smooth.webp"
+SMOOTH_OUTPUT = Path(__file__).parent / "final" / "cow-eating-60.webp"
 FRAME_COUNT = 6
 CROP_TOP = 225
 CROP_BOTTOM = 470
@@ -71,7 +71,13 @@ def main() -> None:
         alpha = alpha.filter(ImageFilter.MinFilter(3)).filter(ImageFilter.GaussianBlur(0.55))
         rgba = frame.convert("RGBA")
         rgba.putalpha(alpha)
-        rgba_frames.append(rgba.crop((0, CROP_TOP, frame_width, CROP_BOTTOM)))
+        cropped = rgba.crop((0, CROP_TOP, frame_width, CROP_BOTTOM))
+        # Generated poses occasionally contain a detached sliver inherited from
+        # the neighbouring storyboard cell. Clear only the unsafe outer gutter.
+        alpha = cropped.getchannel("A")
+        alpha.paste(0, (0, 0, 10, cropped.height))
+        cropped.putalpha(alpha)
+        rgba_frames.append(cropped)
 
     strip = Image.new("RGBA", (source.width, CROP_BOTTOM - CROP_TOP), (0, 0, 0, 0))
     for index, frame in enumerate(rgba_frames):
@@ -91,25 +97,44 @@ def main() -> None:
         result = np.concatenate((rgb, alpha), axis=2)
         return Image.fromarray(np.clip(result * 255, 0, 255).astype(np.uint8), "RGBA")
 
+    # Add two subtle muzzle variants so the raised-head pose visibly chews.
+    def chew_variant(frame: Image.Image, offset: int) -> Image.Image:
+        box = (48, 55, 145, 123)
+        patch = frame.crop(box)
+        mask = Image.new("L", patch.size, 0)
+        ImageDraw.Draw(mask).ellipse((5, 7, patch.width - 5, patch.height - 5), fill=220)
+        mask = mask.filter(ImageFilter.GaussianBlur(7))
+        result = frame.copy()
+        result.paste(patch, (box[0], box[1] + offset), mask)
+        return result
+
+    poses = rgba_frames + [chew_variant(rgba_frames[3], 2), chew_variant(rgba_frames[3], -1)]
     timeline: list[Image.Image] = []
-    fps = 30
+    fps = 60
 
     def hold(index: int, seconds: float) -> None:
-        timeline.extend([rgba_frames[index]] * round(seconds * fps))
+        timeline.extend([poses[index]] * round(seconds * fps))
 
     def move(start: int, end: int, seconds: float) -> None:
         count = round(seconds * fps)
         for step in range(1, count + 1):
             linear = step / count
             eased = linear * linear * (3 - 2 * linear)
-            timeline.append(tween(rgba_frames[start], rgba_frames[end], eased))
+            timeline.append(tween(poses[start], poses[end], eased))
 
     hold(0, .65)
     move(0, 1, .42)
     move(1, 2, .38)
     hold(2, .72)
     move(2, 3, .42)
-    hold(3, .36)
+    hold(3, .12)
+    move(3, 6, .11)
+    move(6, 3, .11)
+    move(3, 7, .11)
+    move(7, 3, .11)
+    move(3, 6, .11)
+    move(6, 3, .11)
+    hold(3, .12)
     move(3, 4, .32)
     hold(4, .55)
     move(4, 5, .32)
@@ -123,10 +148,10 @@ def main() -> None:
         SMOOTH_OUTPUT,
         save_all=True,
         append_images=timeline[1:],
-        duration=33,
+        duration=17,
         loop=0,
         lossless=False,
-        quality=72,
+        quality=68,
         method=3,
     )
     print(OUTPUT)
