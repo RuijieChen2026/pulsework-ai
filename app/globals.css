@@ -25,6 +25,14 @@
 .icon-violet { background: #eeeafa; color: #6955a7; }
 .icon-amber { background: #f8edd9; color: #a46827; }
 ::selection { background: #cadccd; color: #193122; }
+.workplace-map {
+  background-color: #e7eee8;
+  background-image:
+    radial-gradient(circle at 18% 22%, rgba(255,255,255,.9) 0 2px, transparent 3px),
+    radial-gradient(circle at 76% 68%, rgba(255,255,255,.75) 0 2px, transparent 3px),
+    linear-gradient(32deg, transparent 47%, rgba(255,255,255,.34) 48% 51%, transparent 52%);
+  background-size: 44px 44px, 58px 58px, 150px 150px;
+}
 
 .case-card { transform-style: preserve-3d; will-change: transform; }
 .case-card > * { transform: translateZ(12px); }

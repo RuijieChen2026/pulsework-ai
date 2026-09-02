@@ -1,12 +1,12 @@
 'use client';
 
-import { AlertTriangle, ArrowRight, ArrowUp, BarChart3, BookOpen, Bot, BrainCircuit, Check, CheckCircle2, ChevronDown, CircleDot, Clock3, Command, Database, Eye, FileCheck2, FileText, Gauge, GitBranch, HomeIcon, LayoutGrid, LockKeyhole, MessageSquareText, MoreHorizontal, Play, Plus, Receipt, RotateCcw, Search, ShieldCheck, Sparkles, Target, UserCheck, Users, Workflow, X } from 'lucide-react';
+import { AlertTriangle, ArrowRight, ArrowUp, BarChart3, BookOpen, Bot, BrainCircuit, Building2, Check, CheckCircle2, ChevronDown, CircleDot, Clock3, Coffee, Command, Database, Eye, FileCheck2, FileText, Gauge, GitBranch, HomeIcon, LayoutGrid, LockKeyhole, MapPinned, MessageSquareText, MoreHorizontal, Navigation, Play, Plus, Receipt, RotateCcw, Search, ShieldCheck, Sparkles, Target, TrainFront, UserCheck, Users, Workflow, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 type Scenario = 'expense' | 'onboarding' | 'policy';
-type Surface = 'assistant' | 'tasks' | 'knowledge' | 'market';
+type Surface = 'assistant' | 'tasks' | 'knowledge' | 'workplace' | 'market';
 
 const quickActions = [
   { icon: FileCheck2, title: '报销差旅费', hint: '核对发票并发起审批', tone: 'mint', scenario: 'expense' as Scenario, prompt: '我明天去深圳出差，这张 680 元的酒店发票能报销吗？可以的话帮我提交。' },
@@ -36,7 +36,7 @@ export default function Home() {
         </div>
         <Button className="mt-7 h-10 justify-start rounded-xl px-3 shadow-sm"><Plus className="size-4" /> 新建对话<span className="ml-auto rounded border border-white/20 px-1.5 py-0.5 text-[10px] text-white/65">⌘ K</span></Button>
         <nav className="mt-7 space-y-1" aria-label="主导航">
-          {[[MessageSquareText, '工作助手', 'assistant'], [Workflow, '任务中心', 'tasks'], [BookOpen, '知识空间', 'knowledge'], [LayoutGrid, 'Agent 市集', 'market']].map(([Icon, label, id]) => (
+          {[[MessageSquareText, '工作助手', 'assistant'], [Workflow, '任务中心', 'tasks'], [BookOpen, '知识空间', 'knowledge'], [MapPinned, '职场地图', 'workplace'], [LayoutGrid, 'Agent 市集', 'market']].map(([Icon, label, id]) => (
             <button key={label as string} onClick={() => { setSurface(id as Surface); setSent(false); }} className={`flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm transition-colors ${surface === id ? 'bg-primary/8 font-medium text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}><Icon className="size-4" /> {label as string}{id === 'tasks' && <span className="ml-auto rounded-full bg-[#ff6b55] px-1.5 text-[9px] text-white">2</span>}</button>
           ))}
         </nav>
@@ -52,7 +52,7 @@ export default function Home() {
 
       <section className="min-h-screen lg:pl-[248px]">
         <header className="sticky top-0 z-20 flex h-16 items-center border-b border-border/70 bg-background/85 px-5 pr-[300px] backdrop-blur-xl md:px-8 md:pr-[340px]">
-          <div className="flex items-center gap-2 text-sm font-medium">{surface === 'assistant' ? <Bot className="size-4 text-primary" /> : surface === 'tasks' ? <Workflow className="size-4 text-primary" /> : surface === 'knowledge' ? <BookOpen className="size-4 text-primary" /> : <LayoutGrid className="size-4 text-primary" />} {surface === 'assistant' ? '通用工作助手' : surface === 'tasks' ? '任务中心' : surface === 'knowledge' ? '知识空间' : 'Agent 市集'} <ChevronDown className="size-3.5 text-muted-foreground" /></div>
+          <div className="flex items-center gap-2 text-sm font-medium">{surface === 'assistant' ? <Bot className="size-4 text-primary" /> : surface === 'tasks' ? <Workflow className="size-4 text-primary" /> : surface === 'knowledge' ? <BookOpen className="size-4 text-primary" /> : surface === 'workplace' ? <MapPinned className="size-4 text-primary" /> : <LayoutGrid className="size-4 text-primary" />} {surface === 'assistant' ? '通用工作助手' : surface === 'tasks' ? '任务中心' : surface === 'knowledge' ? '知识空间' : surface === 'workplace' ? '职场地图' : 'Agent 市集'} <ChevronDown className="size-3.5 text-muted-foreground" /></div>
           <Badge variant="outline" className="ml-3 border-emerald-200 bg-emerald-50 text-[10px] text-emerald-700"><span className="size-1.5 rounded-full bg-emerald-500" /> 12 个工具已连接</Badge>
           <div className="ml-auto flex items-center gap-2"><Button variant="ghost" size="icon" aria-label="搜索"><Search /></Button><Button variant="ghost" size="icon" aria-label="更多"><MoreHorizontal /></Button><div className="ml-1 grid size-8 place-items-center rounded-full bg-[#dbe7df] text-xs font-semibold text-[#2d4638]">RC</div></div>
         </header>
@@ -111,6 +111,7 @@ type View = 'product' | 'case' | 'eval';
 function WorkspaceSurface({ surface, onUseAgent }: { surface: Exclude<Surface, 'assistant'>; onUseAgent: (scenario: Scenario, prompt: string) => void }) {
   if (surface === 'tasks') return <TaskCenter />;
   if (surface === 'knowledge') return <KnowledgeSpace />;
+  if (surface === 'workplace') return <WorkplaceMap onPlan={(prompt) => onUseAgent('onboarding', prompt)} />;
   return <AgentMarket onUseAgent={onUseAgent} />;
 }
 
@@ -126,6 +127,58 @@ function TaskCenter() {
 function KnowledgeSpace() {
   const spaces = [['人事制度','1,284','12 分钟前','98%'],['财务与采购','862','35 分钟前','96%'],['法务与合规','497','2 小时前','94%'],['产品与技术 Wiki','3,840','8 分钟前','91%']];
   return <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-10"><SurfaceHeader eyebrow="Enterprise context" title="知识空间" description="管理 Agent 可以检索的企业上下文，监控新鲜度与可用性。" action={<Button variant="outline" className="rounded-xl bg-white"><Plus/> 连接数据源</Button>}/><div className="mt-8 grid gap-5 lg:grid-cols-[1fr_.42fr]"><div className="overflow-hidden rounded-2xl border border-border bg-white"><div className="flex items-center gap-3 border-b border-border p-5"><Search className="size-4 text-muted-foreground"/><span className="text-sm text-muted-foreground">搜索知识空间…</span><Badge variant="outline" className="ml-auto">4 spaces</Badge></div>{spaces.map(([a,b,c,d],i)=><div key={a} className="flex items-center gap-4 border-b border-border/70 p-5 last:border-0"><div className={`grid size-10 place-items-center rounded-xl ${['bg-blue-50 text-blue-600','bg-emerald-50 text-emerald-600','bg-orange-50 text-orange-600','bg-violet-50 text-violet-600'][i]}`}><BookOpen className="size-4"/></div><div className="min-w-0 flex-1"><div className="text-sm font-medium">{a}</div><div className="mt-1 text-[10px] text-muted-foreground">{b} 份文档 · 同步于 {c}</div></div><div className="hidden w-28 sm:block"><div className="flex justify-between text-[9px] text-muted-foreground"><span>检索可用性</span><span>{d}</span></div><div className="mt-1 h-1 rounded-full bg-muted"><div className="h-1 rounded-full bg-emerald-500" style={{width:d}}/></div></div><Button variant="ghost" size="icon"><MoreHorizontal/></Button></div>)}</div><aside className="space-y-4"><div className="rounded-2xl bg-[#1d2a22] p-5 text-white"><div className="text-xs font-semibold">上下文健康度</div><div className="mt-5 text-4xl font-semibold">94<span className="text-lg text-white/45">/100</span></div><div className="mt-4 h-1.5 rounded-full bg-white/10"><div className="h-1.5 w-[94%] rounded-full bg-[#8ed1a1]"/></div><div className="mt-5 grid grid-cols-2 gap-3 text-center"><div className="rounded-xl bg-white/[.06] p-3"><div className="text-lg font-semibold">6,483</div><div className="text-[9px] text-white/40">文档</div></div><div className="rounded-xl bg-white/[.06] p-3"><div className="text-lg font-semibold">23</div><div className="text-[9px] text-white/40">数据源</div></div></div></div><div className="rounded-2xl border border-amber-200 bg-amber-50 p-5"><div className="text-xs font-semibold text-amber-900">7 份文档即将过期</div><p className="mt-2 text-[10px] leading-4 text-amber-800/70">其中 3 份正在影响高频问题的答案。</p><Button size="sm" variant="outline" className="mt-3 rounded-lg bg-white">查看影响</Button></div></aside></div></div>;
+}
+
+type WorkplaceCity = '深圳' | '上海';
+
+const workplaces = [
+  { id: 'sz-hq', city: '深圳' as WorkplaceCity, name: '深圳湾职场', short: '深圳湾', address: '南山区科技南路 18 号', hours: '08:00–22:00', transit: '地铁 2/11 号线后海站 · 步行 8 分钟', people: '8,420', x: '63%', y: '38%', departments: [['产品与研发', 42], ['商业化', 24], ['企业服务', 18], ['职能支持', 16]], types: [['正式员工', 76], ['实习生', 14], ['项目协作', 10]], facilities: ['24h 会议区', '员工食堂', '健身房', '访客中心'] },
+  { id: 'sz-tech', city: '深圳' as WorkplaceCity, name: '科技园职场', short: '科技园', address: '南山区科苑路 15 号', hours: '08:30–21:30', transit: '地铁 1 号线高新园站 · 步行 6 分钟', people: '4,180', x: '42%', y: '55%', departments: [['研发与数据', 55], ['产品设计', 23], ['商业化', 12], ['职能支持', 10]], types: [['正式员工', 72], ['实习生', 19], ['项目协作', 9]], facilities: ['开放协作区', '专注间', '咖啡吧', '单车停放'] },
+  { id: 'sz-qh', city: '深圳' as WorkplaceCity, name: '前海职场', short: '前海', address: '前海深港合作区梦海大道', hours: '09:00–21:00', transit: '地铁 5 号线桂湾站 · 步行 5 分钟', people: '2,360', x: '24%', y: '69%', departments: [['商业化', 38], ['企业服务', 27], ['产品与研发', 20], ['职能支持', 15]], types: [['正式员工', 81], ['实习生', 11], ['项目协作', 8]], facilities: ['客户会议中心', '员工食堂', '母婴室', '空中花园'] },
+  { id: 'sh-hq', city: '上海' as WorkplaceCity, name: '杨浦职场', short: '杨浦', address: '杨浦区政学路 88 号', hours: '08:00–22:00', transit: '地铁 10 号线江湾体育场站 · 步行 7 分钟', people: '6,740', x: '68%', y: '31%', departments: [['产品与研发', 39], ['商业化', 29], ['内容与运营', 19], ['职能支持', 13]], types: [['正式员工', 79], ['实习生', 13], ['项目协作', 8]], facilities: ['大型路演厅', '员工食堂', '医务室', '访客中心'] },
+  { id: 'sh-zj', city: '上海' as WorkplaceCity, name: '张江职场', short: '张江', address: '浦东新区祖冲之路 2305 号', hours: '08:30–21:30', transit: '地铁 2 号线广兰路站 · 班车 10 分钟', people: '3,960', x: '36%', y: '62%', departments: [['研发与数据', 61], ['产品设计', 18], ['安全与质量', 12], ['职能支持', 9]], types: [['正式员工', 74], ['实习生', 17], ['项目协作', 9]], facilities: ['实验室', '开发者空间', '班车点', '健身房'] },
+];
+
+function WorkplaceMap({ onPlan }: { onPlan: (prompt: string) => void }) {
+  const [city, setCity] = useState<WorkplaceCity>('深圳');
+  const cityWorkplaces = workplaces.filter((item) => item.city === city);
+  const [selectedId, setSelectedId] = useState('sz-hq');
+  const selected = workplaces.find((item) => item.id === selectedId && item.city === city) ?? cityWorkplaces[0];
+  const chooseCity = (next: WorkplaceCity) => { setCity(next); setSelectedId(workplaces.find((item) => item.city === next)!.id); };
+
+  return <div className="mx-auto max-w-[1240px] px-5 py-8 md:px-10">
+    <SurfaceHeader eyebrow="Workplace intelligence" title="职场地图" description="查找工区、了解组织分布，并让 Agent 完成行程与资源安排。" action={<div className="flex rounded-xl border border-border bg-white p-1">{(['深圳','上海'] as WorkplaceCity[]).map((item) => <button key={item} onClick={() => chooseCity(item)} className={`rounded-lg px-4 py-2 text-xs font-medium transition ${city === item ? 'bg-[#1d2a22] text-white shadow-sm' : 'text-muted-foreground hover:bg-muted'}`}>{item}</button>)}</div>} />
+
+    <div className="mt-7 grid gap-5 xl:grid-cols-[1.18fr_.82fr]">
+      <section className="overflow-hidden rounded-[24px] border border-border bg-[#eaf0ea] shadow-[0_16px_50px_rgba(31,48,37,.06)]">
+        <div className="flex items-center justify-between border-b border-white/70 bg-white/65 px-5 py-3 backdrop-blur"><div className="flex items-center gap-2 text-xs font-medium"><MapPinned className="size-4 text-primary"/>{city} · {cityWorkplaces.length} 个工区</div><div className="text-[10px] text-muted-foreground">演示地理数据</div></div>
+        <div className="workplace-map relative min-h-[430px] overflow-hidden">
+          <div className="absolute left-[7%] top-[15%] h-[56%] w-[86%] rotate-[-8deg] rounded-[45%] border-[18px] border-white/55" />
+          <div className="absolute -bottom-12 -left-12 h-52 w-[120%] rotate-[8deg] rounded-[50%] bg-[#cfe1db]/80" />
+          <div className="absolute left-[18%] top-[23%] h-1 w-[72%] rotate-[18deg] rounded-full bg-white/70" />
+          <div className="absolute left-[10%] top-[48%] h-1 w-[70%] -rotate-[12deg] rounded-full bg-white/65" />
+          <div className="absolute left-[53%] top-[8%] h-[78%] w-1 rotate-[8deg] rounded-full bg-white/65" />
+          {cityWorkplaces.map((item) => <button key={item.id} onClick={() => setSelectedId(item.id)} style={{left:item.x,top:item.y}} className="group absolute -translate-x-1/2 -translate-y-1/2 text-left">
+            <span className={`relative grid size-10 place-items-center rounded-2xl border-4 border-white shadow-[0_8px_24px_rgba(28,48,35,.18)] transition-all group-hover:-translate-y-1 ${selected.id === item.id ? 'scale-110 bg-primary text-white' : 'bg-white text-primary'}`}><Building2 className="size-4"/><span className={`absolute -bottom-1 -right-1 size-3 rounded-full border-2 border-white ${selected.id === item.id ? 'bg-emerald-400' : 'bg-[#9bad9f]'}`}/></span>
+            <span className={`mt-2 block -translate-x-[30%] whitespace-nowrap rounded-lg px-2 py-1 text-[10px] font-semibold shadow-sm ${selected.id === item.id ? 'bg-[#1d2a22] text-white' : 'bg-white/90 text-foreground'}`}>{item.short}</span>
+          </button>)}
+          <div className="absolute bottom-4 left-4 rounded-xl border border-white/70 bg-white/80 p-3 text-[9px] leading-4 text-muted-foreground shadow-sm backdrop-blur"><div className="font-semibold text-foreground">隐私保护已开启</div>仅展示工区级聚合分布<br/>不提供个人位置或轨迹</div>
+        </div>
+      </section>
+
+      <aside className="rounded-[24px] border border-border bg-white p-5 shadow-[0_16px_50px_rgba(31,48,37,.06)]">
+        <div className="flex items-start gap-3"><div className="grid size-11 shrink-0 place-items-center rounded-2xl bg-[#e4efe7] text-primary"><Building2 className="size-5"/></div><div className="min-w-0"><h2 className="text-xl font-semibold tracking-[-.03em]">{selected.name}</h2><p className="mt-1 text-[11px] text-muted-foreground">{selected.address}</p></div><Badge className="ml-auto bg-emerald-50 text-[9px] text-emerald-700 hover:bg-emerald-50">开放</Badge></div>
+        <div className="mt-5 grid grid-cols-2 gap-2"><div className="rounded-xl bg-[#f5f7f4] p-3"><div className="flex items-center gap-1.5 text-[9px] text-muted-foreground"><Users className="size-3"/>工区规模</div><div className="mt-1 text-lg font-semibold">{selected.people}<span className="ml-1 text-[10px] font-normal text-muted-foreground">人</span></div></div><div className="rounded-xl bg-[#f5f7f4] p-3"><div className="flex items-center gap-1.5 text-[9px] text-muted-foreground"><Clock3 className="size-3"/>开放时间</div><div className="mt-1 text-sm font-semibold">{selected.hours}</div></div></div>
+        <div className="mt-3 flex items-start gap-2 rounded-xl border border-border p-3 text-[10px] leading-4 text-muted-foreground"><TrainFront className="mt-0.5 size-3.5 shrink-0 text-primary"/>{selected.transit}</div>
+
+        <div className="mt-5"><div className="flex items-center justify-between text-xs font-semibold"><span>部门分布</span><span className="text-[9px] font-normal text-muted-foreground">聚合数据</span></div><div className="mt-3 space-y-2.5">{selected.departments.map(([name,value],index) => <div key={name as string}><div className="flex justify-between text-[10px]"><span>{name}</span><span className="text-muted-foreground">{value}%</span></div><div className="mt-1 h-1.5 rounded-full bg-muted"><div className={`h-1.5 rounded-full ${['bg-[#477d5b]','bg-[#739a80]','bg-[#a2bba9]','bg-[#cad8cd]'][index]}`} style={{width:`${value}%`}}/></div></div>)}</div></div>
+        <div className="mt-5"><div className="text-xs font-semibold">员工类型</div><div className="mt-3 flex h-2 overflow-hidden rounded-full">{selected.types.map(([name,value],index)=><div key={name as string} className={['bg-[#3f7152]','bg-[#8eb09a]','bg-[#d5e0d8]'][index]} style={{width:`${value}%`}}/>)}</div><div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">{selected.types.map(([name,value],index)=><div key={name as string} className="flex items-center gap-1.5 text-[9px] text-muted-foreground"><span className={`size-2 rounded-full ${['bg-[#3f7152]','bg-[#8eb09a]','bg-[#d5e0d8]'][index]}`}/>{name} {value}%</div>)}</div></div>
+        <div className="mt-5"><div className="flex items-center gap-1.5 text-xs font-semibold"><Coffee className="size-3.5"/>职场设施</div><div className="mt-2 flex flex-wrap gap-1.5">{selected.facilities.map((item)=><span key={item} className="rounded-lg border border-border bg-[#fafbf9] px-2 py-1 text-[9px] text-muted-foreground">{item}</span>)}</div></div>
+        <div className="mt-5 grid grid-cols-2 gap-2"><Button variant="outline" className="rounded-xl"><Navigation/>地图导航</Button><Button onClick={() => onPlan(`我要去${selected.name}，请结合交通、访客登记和会议室帮我规划行程。`)} className="rounded-xl"><Sparkles/>Agent 规划</Button></div>
+        <p className="mt-3 text-center text-[9px] leading-4 text-muted-foreground">人数与组织分布均为产品演示数据，仅展示大于隐私阈值的聚合结果。</p>
+      </aside>
+    </div>
+  </div>;
 }
 
 function AgentMarket({ onUseAgent }: { onUseAgent: (scenario: Scenario, prompt: string) => void }) {
