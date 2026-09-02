@@ -1,0 +1,27 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@custom-variant dark (&:is(.dark *));
+@theme inline {
+  --color-background: var(--background); --color-foreground: var(--foreground); --font-sans: var(--font-geist-sans); --font-mono: var(--font-geist-mono); --font-heading: var(--font-sans);
+  --color-card: var(--card); --color-card-foreground: var(--card-foreground); --color-popover: var(--popover); --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary); --color-primary-foreground: var(--primary-foreground); --color-secondary: var(--secondary); --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted); --color-muted-foreground: var(--muted-foreground); --color-accent: var(--accent); --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive); --color-border: var(--border); --color-input: var(--input); --color-ring: var(--ring); --color-sidebar: var(--sidebar); --color-sidebar-foreground: var(--sidebar-foreground);
+  --radius-sm: calc(var(--radius) * .6); --radius-md: calc(var(--radius) * .8); --radius-lg: var(--radius); --radius-xl: calc(var(--radius) * 1.4); --radius-2xl: calc(var(--radius) * 1.8); --radius-3xl: calc(var(--radius) * 2.2); --radius-4xl: calc(var(--radius) * 2.6);
+}
+:root {
+  --background: #f7f8f5; --foreground: #1d2821; --card: #fff; --card-foreground: #1d2821; --popover: #fff; --popover-foreground: #1d2821; --primary: #315b43; --primary-foreground: #fff;
+  --secondary: #e9eee9; --secondary-foreground: #284435; --muted: #edf0ec; --muted-foreground: #68756d; --accent: #e8efe9; --accent-foreground: #274234; --destructive: #c74242;
+  --border: #dde3dd; --input: #d7ded7; --ring: #6c927b; --sidebar: #f2f4f0; --sidebar-foreground: #263229; --radius: .7rem;
+}
+.dark {
+  --background: #111713; --foreground: #eff5f0; --card: #19211c; --card-foreground: #eff5f0; --popover: #19211c; --popover-foreground: #eff5f0; --primary: #8fbaa0; --primary-foreground: #102016;
+  --secondary: #233027; --secondary-foreground: #e8f1ea; --muted: #222c25; --muted-foreground: #9daaa1; --accent: #28382d; --accent-foreground: #eff5f0; --destructive: #ef7979;
+  --border: #2e3a32; --input: #344239; --ring: #7fa08b; --sidebar: #151c17; --sidebar-foreground: #eff5f0;
+}
+@layer base { * { @apply border-border outline-ring/50; } html { @apply font-sans; } body { @apply bg-background text-foreground; } button { cursor: pointer; } }
+.icon-mint { background: #e5f3eb; color: #32704d; }
+.icon-violet { background: #eeeafa; color: #6955a7; }
+.icon-amber { background: #f8edd9; color: #a46827; }
+::selection { background: #cadccd; color: #193122; }
