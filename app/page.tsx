@@ -5,18 +5,21 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
+type Scenario = 'expense' | 'onboarding' | 'policy';
+
 const quickActions = [
-  { icon: FileCheck2, title: '报销差旅费', hint: '核对发票并发起审批', tone: 'mint' },
-  { icon: Users, title: '入职准备', hint: '生成跨部门任务清单', tone: 'violet' },
-  { icon: BookOpen, title: '查公司制度', hint: '从企业知识库找答案', tone: 'amber' },
+  { icon: FileCheck2, title: '报销差旅费', hint: '核对发票并发起审批', tone: 'mint', scenario: 'expense' as Scenario, prompt: '我明天去深圳出差，这张 680 元的酒店发票能报销吗？可以的话帮我提交。' },
+  { icon: Users, title: '入职准备', hint: '生成跨部门任务清单', tone: 'violet', scenario: 'onboarding' as Scenario, prompt: '我下周一在深圳入职 AI 产品经理，帮我生成入职准备清单并分派任务。' },
+  { icon: BookOpen, title: '查公司制度', hint: '从企业知识库找答案', tone: 'amber', scenario: 'policy' as Scenario, prompt: '试用期间可以申请每周两天远程办公吗？请告诉我适用条件和申请流程。' },
 ];
 
 export default function Home() {
   const [query, setQuery] = useState('');
   const [sent, setSent] = useState(false);
   const [approved, setApproved] = useState(false);
+  const [scenario, setScenario] = useState<Scenario>('expense');
   const [view, setView] = useState<'product' | 'case' | 'eval'>('product');
-  const submit = () => { if (query.trim()) { setSent(true); setApproved(false); } };
+  const submit = () => { if (query.trim()) { setScenario(/入职|新员工|账号|工位/.test(query) ? 'onboarding' : /制度|试用期|远程|请假|规定/.test(query) ? 'policy' : 'expense'); setSent(true); setApproved(false); } };
 
   if (view === 'case') return <CaseStudy onNavigate={setView} />;
   if (view === 'eval') return <Evaluation onNavigate={setView} />;
@@ -52,21 +55,21 @@ export default function Home() {
           <div className="ml-auto flex items-center gap-2"><Button variant="ghost" size="icon" aria-label="搜索"><Search /></Button><Button variant="ghost" size="icon" aria-label="更多"><MoreHorizontal /></Button><div className="ml-1 grid size-8 place-items-center rounded-full bg-[#dbe7df] text-xs font-semibold text-[#2d4638]">RC</div></div>
         </header>
         <div className={`mx-auto flex w-full flex-col px-5 pb-10 md:px-10 ${sent ? 'max-w-[1120px] pt-8' : 'max-w-[980px] pt-[clamp(56px,9vh,96px)]'}`}>
-          {sent ? <AgentRun query={query} approved={approved} onApprove={() => setApproved(true)} onReset={() => { setSent(false); setApproved(false); setQuery(''); }} /> : <>
+          {sent ? <AgentRun scenario={scenario} query={query} approved={approved} onApprove={() => setApproved(true)} onReset={() => { setSent(false); setApproved(false); setQuery(''); }} /> : <>
           <div className="max-w-2xl">
             <Badge className="mb-5 bg-[#e7f0ea] text-[#335b43] hover:bg-[#e7f0ea]"><Sparkles className="size-3" /> 基于企业上下文的智能协作</Badge>
             <h1 className="text-[clamp(2.25rem,5vw,4.2rem)] font-semibold leading-[1.02] tracking-[-0.055em] text-[#18251e]">今天想完成什么？</h1>
             <p className="mt-5 max-w-xl text-[15px] leading-7 text-muted-foreground">我可以理解公司制度、调用企业工具，并在关键节点向你确认。答案都会附上可追溯来源。</p>
           </div>
           <div className="mt-9 grid gap-3 md:grid-cols-3">
-            {quickActions.map(({ icon: Icon, title, hint, tone }) => (
-              <button key={title} onClick={() => setQuery(`${title}，帮我${hint}`)} className="group rounded-2xl border border-border bg-card p-4 text-left shadow-[0_12px_34px_rgba(39,55,45,.045)] transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_16px_38px_rgba(39,55,45,.08)]">
+            {quickActions.map(({ icon: Icon, title, hint, tone, scenario: nextScenario, prompt }) => (
+              <button key={title} onClick={() => { setScenario(nextScenario); setQuery(prompt); setSent(true); setApproved(false); }} className="group rounded-2xl border border-border bg-card p-4 text-left shadow-[0_12px_34px_rgba(39,55,45,.045)] transition-all hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_16px_38px_rgba(39,55,45,.08)]">
                 <div className={`grid size-9 place-items-center rounded-xl icon-${tone}`}><Icon className="size-4" /></div>
                 <div className="mt-5 flex items-end justify-between gap-3"><div><div className="text-sm font-semibold">{title}</div><div className="mt-1 text-xs text-muted-foreground">{hint}</div></div><ArrowUp className="size-4 rotate-45 text-muted-foreground/50 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" /></div>
               </button>
             ))}
           </div>
-          <button onClick={() => { setQuery('我明天去深圳出差，这张 680 元的酒店发票能报销吗？可以的话帮我提交。'); setSent(true); }} className="mt-4 flex w-full items-center gap-4 rounded-2xl border border-[#c9d8ce] bg-[#eaf1ec] p-4 text-left transition hover:border-primary/35 hover:bg-[#e3ede6]">
+          <button onClick={() => { setScenario('expense'); setQuery('我明天去深圳出差，这张 680 元的酒店发票能报销吗？可以的话帮我提交。'); setSent(true); }} className="mt-4 flex w-full items-center gap-4 rounded-2xl border border-[#c9d8ce] bg-[#eaf1ec] p-4 text-left transition hover:border-primary/35 hover:bg-[#e3ede6]">
             <div className="grid size-10 shrink-0 place-items-center rounded-full bg-primary text-white"><Play className="ml-0.5 size-4 fill-current" /></div>
             <div><div className="text-sm font-semibold text-[#294536]">体验完整 Agent 流程</div><div className="mt-0.5 text-xs text-[#5d7465]">从政策检索、发票核验到人工确认提交 · 约 30 秒</div></div>
             <ArrowRight className="ml-auto size-4 text-primary" />
@@ -87,7 +90,14 @@ export default function Home() {
 
 type View = 'product' | 'case' | 'eval';
 
-function AgentRun({ query, approved, onApprove, onReset }: { query: string; approved: boolean; onApprove: () => void; onReset: () => void }) {
+function ScenarioRun({ scenario, query, approved, onApprove, onReset }: { scenario: 'onboarding' | 'policy'; query: string; approved: boolean; onApprove: () => void; onReset: () => void }) {
+  const onboarding = scenario === 'onboarding';
+  const steps = onboarding ? [['读取入职上下文','深圳 · AI 产品经理 · 2026-09-07'],['匹配角色化模板','命中产品岗位、深圳职场与新员工模板'],['检查跨部门依赖','HR、IT、行政、直属上级 4 个负责方'],['生成任务计划','8 项任务 · 3 个关键依赖']] : [['识别制度意图','试用期 + 远程办公 + 深圳'],['权限感知检索','检索 17 份文档，用户可访问 12 份'],['版本与地区校验','排除 2 份过期制度与 1 份上海特例'],['答案归因检查','3 个结论均有段落级引用']];
+  return <div className="animate-in fade-in slide-in-from-bottom-2 duration-500"><div className="flex items-center justify-between"><div><div className="text-xs font-semibold uppercase tracking-[.16em] text-muted-foreground">{onboarding?'Onboarding agent':'Knowledge agent'}</div><h1 className="mt-2 text-3xl font-semibold tracking-[-.04em]">{onboarding?'入职准备计划':'制度查询结果'}</h1></div><Button onClick={onReset} variant="outline" className="rounded-xl"><RotateCcw/> 重新体验</Button></div><div className="mt-7 grid gap-5 lg:grid-cols-[.72fr_1.28fr]"><aside className="rounded-[22px] bg-[#1d2a22] p-5 text-white"><div className="flex items-center gap-2 text-sm font-semibold"><span className="size-2 rounded-full bg-emerald-400"/> Agent Trace</div><div className="mt-6 space-y-4">{steps.map(([a,b])=><div key={a} className="flex gap-3"><div className="grid size-7 shrink-0 place-items-center rounded-lg bg-white/10"><Check className="size-3 text-emerald-400"/></div><div><div className="text-xs font-medium">{a}</div><div className="mt-1 text-[10px] leading-4 text-white/45">{b}</div></div></div>)}</div></aside><section className="space-y-4"><div className="ml-auto max-w-[85%] rounded-2xl rounded-tr-md bg-[#e6ece7] px-4 py-3 text-sm">{query}</div>{onboarding ? <><div className="rounded-[22px] border border-border bg-white p-6"><div className="flex items-center gap-3"><div className="grid size-9 place-items-center rounded-xl bg-[#eeeafa] text-[#6955a7]"><Users className="size-4"/></div><div><div className="font-semibold">已生成 8 项入职任务</div><div className="text-xs text-muted-foreground">按照前置依赖与截止日期排序</div></div></div><div className="mt-5 space-y-2">{[['开通工作账号与 SSO','IT 服务台','9月5日'],['准备 MacBook 与门禁卡','深圳行政','9月5日'],['分享首月 OKR 与产品资料','直属上级','9月7日'],['完成信息安全课程','新员工','9月11日']].map(([a,b,c],i)=><div key={a} className="flex items-center gap-3 rounded-xl bg-[#f8f9f7] p-3"><div className="grid size-6 place-items-center rounded-full border border-border text-[10px]">{i+1}</div><div><div className="text-xs font-medium">{a}</div><div className="mt-0.5 text-[10px] text-muted-foreground">{b}</div></div><div className="ml-auto text-[10px] text-muted-foreground">{c}</div></div>)}</div></div>{!approved?<div className="rounded-[22px] border-2 border-[#8d78c1]/25 bg-[#faf8ff] p-5"><div className="text-sm font-semibold">确认后将创建并分派 8 项任务</div><p className="mt-1 text-xs text-muted-foreground">将通知 HR、IT、行政和直属上级。</p><Button onClick={onApprove} className="mt-4 rounded-xl"><Check/> 确认分派</Button></div>:<div className="rounded-[22px] border border-emerald-200 bg-emerald-50 p-5 text-sm font-semibold text-emerald-900"><CheckCircle2 className="mr-2 inline size-4"/>8 项任务已分派，已通知 4 位负责人</div>}</> : <div className="rounded-[22px] border border-border bg-white p-6"><div className="flex items-start gap-3"><div className="grid size-9 shrink-0 place-items-center rounded-xl bg-[#f8edd9] text-[#a46827]"><BookOpen className="size-4"/></div><div><div className="font-semibold">试用期员工可申请远程办公，但默认每周最多 1 天。</div><p className="mt-3 text-sm leading-6 text-muted-foreground">如需每周 2 天，需满足岗位可远程、近一月无绩效风险，并由直属上级和二级主管审批。深圳职场暂无额外限制。</p></div></div><div className="mt-5 space-y-2">{[['《混合办公管理制度》','第 3.1、3.4 节 · v2.6 · 2026-06-15 生效'],['《试用期员工管理规范》','第 5.2 节 · v4.1 · 2026-03-01 生效']].map(([a,b])=><div key={a} className="rounded-xl border border-border bg-[#fafbf9] p-3"><div className="text-xs font-medium">{a}</div><div className="mt-1 text-[10px] text-emerald-700">{b}</div></div>)}</div><div className="mt-5 rounded-xl bg-[#eef3ef] p-4 text-xs leading-5"><strong>申请路径：</strong>工作台 → 考勤 → 混合办公申请 → 选择“试��期例外”</div></div>}</section></div></div>;
+}
+
+function AgentRun({ scenario, query, approved, onApprove, onReset }: { scenario: Scenario; query: string; approved: boolean; onApprove: () => void; onReset: () => void }) {
+  if (scenario !== 'expense') return <ScenarioRun scenario={scenario} query={query} approved={approved} onApprove={onApprove} onReset={onReset} />;
   const trace = [
     { icon: BrainCircuit, label: '识别意图与风险', detail: '制度问答 + 报销提交 · 写操作需确认', time: '84ms' },
     { icon: Database, label: '检索企业知识', detail: '命中 8 个片段，Rerank 后保留 3 条', time: '420ms' },
