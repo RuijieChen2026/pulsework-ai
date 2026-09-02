@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
 type Scenario = 'expense' | 'onboarding' | 'policy';
+type Surface = 'assistant' | 'tasks' | 'knowledge' | 'market';
 
 const quickActions = [
   { icon: FileCheck2, title: '报销差旅费', hint: '核对发票并发起审批', tone: 'mint', scenario: 'expense' as Scenario, prompt: '我明天去深圳出差，这张 680 元的酒店发票能报销吗？可以的话帮我提交。' },
@@ -18,6 +19,7 @@ export default function Home() {
   const [sent, setSent] = useState(false);
   const [approved, setApproved] = useState(false);
   const [scenario, setScenario] = useState<Scenario>('expense');
+  const [surface, setSurface] = useState<Surface>('assistant');
   const [view, setView] = useState<'product' | 'case' | 'eval'>('product');
   const submit = () => { if (query.trim()) { setScenario(/入职|新员工|账号|工位/.test(query) ? 'onboarding' : /制度|试用期|远程|请假|规定/.test(query) ? 'policy' : 'expense'); setSent(true); setApproved(false); } };
 
@@ -34,8 +36,8 @@ export default function Home() {
         </div>
         <Button className="mt-7 h-10 justify-start rounded-xl px-3 shadow-sm"><Plus className="size-4" /> 新建对话<span className="ml-auto rounded border border-white/20 px-1.5 py-0.5 text-[10px] text-white/65">⌘ K</span></Button>
         <nav className="mt-7 space-y-1" aria-label="主导航">
-          {[[MessageSquareText, '工作助手', true], [Workflow, '任务中心', false], [BookOpen, '知识空间', false], [LayoutGrid, 'Agent 市集', false]].map(([Icon, label, active]) => (
-            <button key={label as string} className={`flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm transition-colors ${active ? 'bg-primary/8 font-medium text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}><Icon className="size-4" /> {label as string}</button>
+          {[[MessageSquareText, '工作助手', 'assistant'], [Workflow, '任务中心', 'tasks'], [BookOpen, '知识空间', 'knowledge'], [LayoutGrid, 'Agent 市集', 'market']].map(([Icon, label, id]) => (
+            <button key={label as string} onClick={() => { setSurface(id as Surface); setSent(false); }} className={`flex h-10 w-full items-center gap-3 rounded-xl px-3 text-sm transition-colors ${surface === id ? 'bg-primary/8 font-medium text-primary' : 'text-muted-foreground hover:bg-muted hover:text-foreground'}`}><Icon className="size-4" /> {label as string}{id === 'tasks' && <span className="ml-auto rounded-full bg-[#ff6b55] px-1.5 text-[9px] text-white">2</span>}</button>
           ))}
         </nav>
         <div className="mt-7 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">最近</div>
@@ -50,11 +52,11 @@ export default function Home() {
 
       <section className="min-h-screen lg:pl-[248px]">
         <header className="sticky top-0 z-20 flex h-16 items-center border-b border-border/70 bg-background/85 px-5 pr-[300px] backdrop-blur-xl md:px-8 md:pr-[340px]">
-          <div className="flex items-center gap-2 text-sm font-medium"><Bot className="size-4 text-primary" /> 通用工作助手 <ChevronDown className="size-3.5 text-muted-foreground" /></div>
+          <div className="flex items-center gap-2 text-sm font-medium">{surface === 'assistant' ? <Bot className="size-4 text-primary" /> : surface === 'tasks' ? <Workflow className="size-4 text-primary" /> : surface === 'knowledge' ? <BookOpen className="size-4 text-primary" /> : <LayoutGrid className="size-4 text-primary" />} {surface === 'assistant' ? '通用工作助手' : surface === 'tasks' ? '任务中心' : surface === 'knowledge' ? '知识空间' : 'Agent 市集'} <ChevronDown className="size-3.5 text-muted-foreground" /></div>
           <Badge variant="outline" className="ml-3 border-emerald-200 bg-emerald-50 text-[10px] text-emerald-700"><span className="size-1.5 rounded-full bg-emerald-500" /> 12 个工具已连接</Badge>
           <div className="ml-auto flex items-center gap-2"><Button variant="ghost" size="icon" aria-label="搜索"><Search /></Button><Button variant="ghost" size="icon" aria-label="更多"><MoreHorizontal /></Button><div className="ml-1 grid size-8 place-items-center rounded-full bg-[#dbe7df] text-xs font-semibold text-[#2d4638]">RC</div></div>
         </header>
-        <div className={`mx-auto flex w-full flex-col px-5 pb-10 md:px-10 ${sent ? 'max-w-[1120px] pt-8' : 'max-w-[980px] pt-[clamp(56px,9vh,96px)]'}`}>
+        {surface !== 'assistant' ? <WorkspaceSurface surface={surface} onUseAgent={(nextScenario, prompt) => { setScenario(nextScenario); setQuery(prompt); setSurface('assistant'); setSent(true); }} /> : <div className={`mx-auto flex w-full flex-col px-5 pb-10 md:px-10 ${sent ? 'max-w-[1120px] pt-8' : 'max-w-[980px] pt-[clamp(56px,9vh,96px)]'}`}>
           {sent ? <AgentRun scenario={scenario} query={query} approved={approved} onApprove={() => setApproved(true)} onReset={() => { setSent(false); setApproved(false); setQuery(''); }} /> : <>
           <div className="max-w-2xl">
             <Badge className="mb-5 bg-[#e7f0ea] text-[#335b43] hover:bg-[#e7f0ea]"><Sparkles className="size-3" /> 基于企业上下文的智能协作</Badge>
@@ -82,13 +84,38 @@ export default function Home() {
           </div>
           <div className="mt-3 flex items-center justify-center gap-4 text-[11px] text-muted-foreground/65"><span className="flex items-center gap-1"><ShieldCheck className="size-3" /> 权限感知</span><span className="flex items-center gap-1"><Clock3 className="size-3" /> 可回溯</span><span className="flex items-center gap-1"><CheckCircle2 className="size-3" /> 高风险操作需确认</span></div>
           </>}
-        </div>
+        </div>}
       </section>
     </main>
   );
 }
 
 type View = 'product' | 'case' | 'eval';
+
+function WorkspaceSurface({ surface, onUseAgent }: { surface: Exclude<Surface, 'assistant'>; onUseAgent: (scenario: Scenario, prompt: string) => void }) {
+  if (surface === 'tasks') return <TaskCenter />;
+  if (surface === 'knowledge') return <KnowledgeSpace />;
+  return <AgentMarket onUseAgent={onUseAgent} />;
+}
+
+function SurfaceHeader({ eyebrow, title, description, action }: { eyebrow: string; title: string; description: string; action?: React.ReactNode }) {
+  return <div className="flex flex-wrap items-end justify-between gap-5"><div><div className="text-[10px] font-semibold uppercase tracking-[.16em] text-muted-foreground">{eyebrow}</div><h1 className="mt-2 text-3xl font-semibold tracking-[-.04em]">{title}</h1><p className="mt-2 text-sm text-muted-foreground">{description}</p></div>{action}</div>;
+}
+
+function TaskCenter() {
+  const tasks = [['差旅报销 BX-2026-09184','等待李明审批','进行中','expense'],['新同学入职准备','2 项任务即将超时','需关注','onboarding'],['Q3 采购申请','已完成 6/6 个节点','已完成','purchase']];
+  return <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-10"><SurfaceHeader eyebrow="My work" title="任务中心" description="查看 Agent 正在做什么，只在需要你时介入。" action={<Button className="rounded-xl"><Plus/> 新建任务</Button>}/><div className="mt-8 grid gap-3 sm:grid-cols-3">{[['3','正在运行'],['2','等待我确认'],['94%','本周按时完成']].map(([v,l],i)=><div key={l} className="rounded-2xl border border-border bg-white p-5"><div className={`text-3xl font-semibold ${i===1?'text-[#e35545]':''}`}>{v}</div><div className="mt-1 text-xs text-muted-foreground">{l}</div></div>)}</div><div className="mt-5 overflow-hidden rounded-2xl border border-border bg-white"><div className="flex items-center justify-between border-b border-border p-5"><div className="font-semibold">我的任务</div><div className="flex gap-1 rounded-lg bg-muted p-1 text-[11px]"><span className="rounded-md bg-white px-2 py-1 shadow-sm">全部</span><span className="px-2 py-1 text-muted-foreground">待确认</span><span className="px-2 py-1 text-muted-foreground">已完成</span></div></div>{tasks.map(([a,b,c,type],i)=><div key={a} className="grid items-center gap-4 border-b border-border/70 p-5 last:border-0 md:grid-cols-[auto_1fr_auto_auto]"><div className={`grid size-10 place-items-center rounded-xl ${type==='expense'?'bg-[#e5f3eb] text-[#32704d]':type==='onboarding'?'bg-[#eeeafa] text-[#6955a7]':'bg-[#e8eef8] text-[#476a9e]'}`}>{type==='expense'?<Receipt className="size-4"/>:type==='onboarding'?<Users className="size-4"/>:<FileCheck2 className="size-4"/>}</div><div><div className="text-sm font-medium">{a}</div><div className="mt-1 text-xs text-muted-foreground">{b}</div></div><Badge className={c==='需关注'?'bg-red-50 text-red-600 hover:bg-red-50':c==='已完成'?'bg-emerald-50 text-emerald-700 hover:bg-emerald-50':'bg-blue-50 text-blue-700 hover:bg-blue-50'}>{c}</Badge><Button variant="ghost" size="icon"><ArrowRight/></Button></div>)}</div><div className="mt-5 rounded-2xl border border-[#f2d4cf] bg-[#fff7f5] p-5"><div className="flex gap-3"><AlertTriangle className="size-5 shrink-0 text-[#e35545]"/><div><div className="text-sm font-semibold">入职任务需要你介入</div><p className="mt-1 text-xs leading-5 text-muted-foreground">IT 服务台尚未确认设备库存，Agent 已重试 2 次。你可以更换设备或手动联系负责人。</p><div className="mt-3 flex gap-2"><Button size="sm" className="rounded-lg">查看建议</Button><Button size="sm" variant="outline" className="rounded-lg bg-white">稍后提醒</Button></div></div></div></div></div>;
+}
+
+function KnowledgeSpace() {
+  const spaces = [['人事制度','1,284','12 分钟前','98%'],['财务与采购','862','35 分钟前','96%'],['法务与合规','497','2 小时前','94%'],['产品与技术 Wiki','3,840','8 分钟前','91%']];
+  return <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-10"><SurfaceHeader eyebrow="Enterprise context" title="知识空间" description="管理 Agent 可以检索的企业上下文，监控新鲜度与可用性。" action={<Button variant="outline" className="rounded-xl bg-white"><Plus/> 连接数据源</Button>}/><div className="mt-8 grid gap-5 lg:grid-cols-[1fr_.42fr]"><div className="overflow-hidden rounded-2xl border border-border bg-white"><div className="flex items-center gap-3 border-b border-border p-5"><Search className="size-4 text-muted-foreground"/><span className="text-sm text-muted-foreground">搜索知识空间…</span><Badge variant="outline" className="ml-auto">4 spaces</Badge></div>{spaces.map(([a,b,c,d],i)=><div key={a} className="flex items-center gap-4 border-b border-border/70 p-5 last:border-0"><div className={`grid size-10 place-items-center rounded-xl ${['bg-blue-50 text-blue-600','bg-emerald-50 text-emerald-600','bg-orange-50 text-orange-600','bg-violet-50 text-violet-600'][i]}`}><BookOpen className="size-4"/></div><div className="min-w-0 flex-1"><div className="text-sm font-medium">{a}</div><div className="mt-1 text-[10px] text-muted-foreground">{b} 份文档 · 同步于 {c}</div></div><div className="hidden w-28 sm:block"><div className="flex justify-between text-[9px] text-muted-foreground"><span>检索可用性</span><span>{d}</span></div><div className="mt-1 h-1 rounded-full bg-muted"><div className="h-1 rounded-full bg-emerald-500" style={{width:d}}/></div></div><Button variant="ghost" size="icon"><MoreHorizontal/></Button></div>)}</div><aside className="space-y-4"><div className="rounded-2xl bg-[#1d2a22] p-5 text-white"><div className="text-xs font-semibold">上下文健康度</div><div className="mt-5 text-4xl font-semibold">94<span className="text-lg text-white/45">/100</span></div><div className="mt-4 h-1.5 rounded-full bg-white/10"><div className="h-1.5 w-[94%] rounded-full bg-[#8ed1a1]"/></div><div className="mt-5 grid grid-cols-2 gap-3 text-center"><div className="rounded-xl bg-white/[.06] p-3"><div className="text-lg font-semibold">6,483</div><div className="text-[9px] text-white/40">文档</div></div><div className="rounded-xl bg-white/[.06] p-3"><div className="text-lg font-semibold">23</div><div className="text-[9px] text-white/40">数据源</div></div></div></div><div className="rounded-2xl border border-amber-200 bg-amber-50 p-5"><div className="text-xs font-semibold text-amber-900">7 份文档即将过期</div><p className="mt-2 text-[10px] leading-4 text-amber-800/70">其中 3 份正在影响高频问题的答案。</p><Button size="sm" variant="outline" className="mt-3 rounded-lg bg-white">查看影响</Button></div></aside></div></div>;
+}
+
+function AgentMarket({ onUseAgent }: { onUseAgent: (scenario: Scenario, prompt: string) => void }) {
+  const agents = [{name:'差旅报销助手',desc:'读发票、校验标准并提交报销',icon:Receipt,tone:'bg-emerald-50 text-emerald-600',scenario:'expense' as Scenario,prompt:quickActions[0].prompt,users:'12.4k'},{name:'新员工入职管家',desc:'跨 HR、IT、行政生成与分派任务',icon:Users,tone:'bg-violet-50 text-violet-600',scenario:'onboarding' as Scenario,prompt:quickActions[1].prompt,users:'8.7k'},{name:'制度问答专家',desc:'带权限、版本与段落引用的答案',icon:BookOpen,tone:'bg-amber-50 text-amber-600',scenario:'policy' as Scenario,prompt:quickActions[2].prompt,users:'26.1k'},{name:'会议行动项助手',desc:'从会议纪要提取负责人与截止日期',icon:CheckCircle2,tone:'bg-blue-50 text-blue-600',scenario:'onboarding' as Scenario,prompt:'帮我从会议纪要中提取行动项。',users:'18.3k'},{name:'合同风险初审',desc:'标记异常条款并对照合同模板',icon:ShieldCheck,tone:'bg-red-50 text-red-600',scenario:'policy' as Scenario,prompt:'帮我检查这份合同的风险条款。',users:'5.6k'},{name:'数据周报生成器',desc:'连接数据表生成结论与可视化周报',icon:BarChart3,tone:'bg-cyan-50 text-cyan-600',scenario:'policy' as Scenario,prompt:'帮我生成本周业务数据周报。',users:'9.2k'}];
+  return <div className="mx-auto max-w-[1120px] px-5 py-10 md:px-10"><SurfaceHeader eyebrow="Agent store" title="Agent 市集" description="经过安全审核的企业 Agent，开箱即用。" action={<div className="flex items-center gap-2 rounded-xl border border-border bg-white px-3 py-2 text-xs text-muted-foreground"><Search className="size-4"/>搜索 Agent</div>}/><div className="mt-7 flex gap-2 overflow-x-auto pb-2">{['为你推荐','效率办公','人事','财务','法务','研发'].map((x,i)=><button key={x} className={`shrink-0 rounded-full px-4 py-2 text-xs ${i===0?'bg-[#1d2a22] text-white':'border border-border bg-white text-muted-foreground'}`}>{x}</button>)}</div><div className="mt-5 grid gap-4 md:grid-cols-2 xl:grid-cols-3">{agents.map(({name,desc,icon:Icon,tone,scenario,prompt,users},i)=><div key={name} className="group rounded-2xl border border-border bg-white p-5 transition hover:-translate-y-0.5 hover:border-primary/25 hover:shadow-[0_12px_35px_rgba(30,46,36,.07)]"><div className="flex items-start justify-between"><div className={`grid size-11 place-items-center rounded-2xl ${tone}`}><Icon className="size-5"/></div>{i<3&&<Badge className="bg-[#eef4ef] text-[9px] text-primary hover:bg-[#eef4ef]">官方</Badge>}</div><div className="mt-5 font-semibold">{name}</div><p className="mt-2 min-h-10 text-xs leading-5 text-muted-foreground">{desc}</p><div className="mt-5 flex items-center justify-between border-t border-border pt-4"><div className="text-[10px] text-muted-foreground">{users} 人使用 · ★ 4.{9-i%2}</div><Button onClick={() => onUseAgent(scenario,prompt)} size="sm" variant="outline" className="rounded-lg group-hover:bg-primary group-hover:text-white">立即使用</Button></div></div>)}</div></div>;
+}
 
 function ScenarioRun({ scenario, query, approved, onApprove, onReset }: { scenario: 'onboarding' | 'policy'; query: string; approved: boolean; onApprove: () => void; onReset: () => void }) {
   const onboarding = scenario === 'onboarding';
