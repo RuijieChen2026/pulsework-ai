@@ -94,11 +94,13 @@ def main() -> None:
     rig_base = rgba_frames[3]
     rig_base.save(RIG_BASE_OUTPUT, optimize=True)
     jaw = Image.new("RGBA", rig_base.size, (0, 0, 0, 0))
-    jaw_box = (45, 52, 151, 126)
+    # Keep the moving layer below the eyes. A wider face mask makes the forehead
+    # drift against the static torso and reads as a visible cutout seam.
+    jaw_box = (52, 73, 137, 119)
     jaw_patch = rig_base.crop(jaw_box)
     jaw_mask = Image.new("L", jaw_patch.size, 0)
-    ImageDraw.Draw(jaw_mask).ellipse((4, 5, jaw_patch.width - 4, jaw_patch.height - 3), fill=235)
-    jaw_mask = jaw_mask.filter(ImageFilter.GaussianBlur(5))
+    ImageDraw.Draw(jaw_mask).ellipse((5, 4, jaw_patch.width - 5, jaw_patch.height - 2), fill=215)
+    jaw_mask = jaw_mask.filter(ImageFilter.GaussianBlur(6))
     jaw.paste(jaw_patch, jaw_box[:2], jaw_mask)
     jaw.save(RIG_JAW_OUTPUT, optimize=True)
 

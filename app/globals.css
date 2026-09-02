@@ -35,8 +35,8 @@
   will-change: transform;
 }
 .cow-rig-jaw {
-  animation: cow-chew .52s cubic-bezier(.37, 0, .63, 1) infinite alternate;
-  transform-origin: 31% 43%;
+  animation: cow-chew .58s cubic-bezier(.45, 0, .55, 1) infinite alternate;
+  transform-origin: 27% 43%;
   will-change: transform;
 }
 .cow-static { display: none; }
@@ -45,8 +45,8 @@
   50% { transform: translate3d(0, -1.5px, 0) rotate(-.12deg) scaleY(1.006); }
 }
 @keyframes cow-chew {
-  0% { transform: translate3d(0, -1px, 0) rotate(-.35deg) scaleY(.99); }
-  100% { transform: translate3d(0, 1.5px, 0) rotate(.45deg) scaleY(1.015); }
+  0% { transform: translate3d(0, -.35px, 0) rotate(-.12deg) scaleY(.997); }
+  100% { transform: translate3d(0, .8px, 0) rotate(.16deg) scaleY(1.008); }
 }
 @media (prefers-reduced-motion: reduce) {
   .case-card { transform: none !important; transition: none !important; }
