@@ -25,3 +25,12 @@
 .icon-violet { background: #eeeafa; color: #6955a7; }
 .icon-amber { background: #f8edd9; color: #a46827; }
 ::selection { background: #cadccd; color: #193122; }
+
+.case-card { transform-style: preserve-3d; will-change: transform; }
+.case-card > * { transform: translateZ(12px); }
+@media (prefers-reduced-motion: reduce) {
+  .case-card { transform: none !important; transition: none !important; }
+}
+@media (max-width: 640px) {
+  .case-card { min-height: 72vh; }
+}
