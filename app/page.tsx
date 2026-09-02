@@ -96,8 +96,9 @@ export default function Home() {
 function CowPet() {
   return <div className="cow-pet group relative hidden h-[152px] select-none overflow-hidden md:block" role="img" aria-label="PulseWork 灵宠牧牧正在吃草">
     <div className="absolute right-1 top-0 rounded-full border border-[#dbe5dc] bg-white/85 px-2.5 py-1 text-[9px] font-medium text-[#587061] opacity-0 shadow-sm backdrop-blur-sm transition-all group-hover:-translate-y-0.5 group-hover:opacity-100">牧牧·工作间隙补充能量</div>
-    <div className="absolute inset-x-0 bottom-0 h-[138px] overflow-hidden transition-transform duration-300 group-hover:scale-[1.025]">
-      <img src="/cow-eating-strip.png" alt="" draggable={false} className="cow-strip h-full w-[600%] max-w-none object-fill" />
+    <div className="cow-stage absolute inset-x-0 bottom-0 h-[138px] transition-transform duration-500 group-hover:scale-[1.025]">
+      <img src="/cow-eating-smooth.webp" alt="" draggable={false} className="cow-animation h-full w-full object-contain" />
+      <div className="cow-static absolute inset-0 bg-[url('/cow-eating-strip.png')] bg-[length:600%_100%] bg-left bg-no-repeat" />
     </div>
   </div>;
 }

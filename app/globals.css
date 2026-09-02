@@ -28,24 +28,17 @@
 
 .case-card { transform-style: preserve-3d; will-change: transform; }
 .case-card > * { transform: translateZ(12px); }
-.cow-strip {
-  transform: translateX(0);
-  animation: cow-graze 7.2s steps(1, end) infinite;
-  will-change: transform;
-}
-.cow-pet:hover .cow-strip { animation-duration: 5.4s; }
-@keyframes cow-graze {
-  0%, 17% { transform: translateX(0); }
-  18%, 29% { transform: translateX(-16.6667%); }
-  30%, 57% { transform: translateX(-33.3333%); }
-  58%, 69% { transform: translateX(-50%); }
-  70%, 84% { transform: translateX(-66.6667%); }
-  85%, 94% { transform: translateX(-83.3333%); }
-  95%, 100% { transform: translateX(0); }
+.cow-stage { animation: cow-breathe 3.8s ease-in-out infinite; transform-origin: 50% 90%; }
+.cow-static { display: none; }
+@keyframes cow-breathe {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-2px) rotate(-.18deg); }
 }
 @media (prefers-reduced-motion: reduce) {
   .case-card { transform: none !important; transition: none !important; }
-  .cow-strip { animation: none !important; transform: translateX(0) !important; }
+  .cow-stage { animation: none !important; }
+  .cow-animation { display: none; }
+  .cow-static { display: block; }
 }
 @media (max-width: 640px) {
   .case-card { min-height: 72vh; }
