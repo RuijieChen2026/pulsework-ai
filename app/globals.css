@@ -14,7 +14,7 @@
   --font-editorial: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", "Songti SC", "STSong", "Noto Serif CJK SC", Georgia, serif;
   --font-ui: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
   --background: #f7f8f5; --foreground: #1d2821; --card: #fff; --card-foreground: #1d2821; --popover: #fff; --popover-foreground: #1d2821; --primary: #315b43; --primary-foreground: #fff;
-  --secondary: #e9eee9; --secondary-foreground: #284435; --muted: #edf0ec; --muted-foreground: #68756d; --accent: #e8efe9; --accent-foreground: #274234; --destructive: #c74242;
+  --secondary: #e9eee9; --secondary-foreground: #284435; --muted: #edf0ec; --muted-foreground: #5d6a62; --accent: #e8efe9; --accent-foreground: #274234; --destructive: #c74242;
   --border: #dde3dd; --input: #d7ded7; --ring: #6c927b; --sidebar: #f2f4f0; --sidebar-foreground: #263229; --radius: .7rem;
 }
 .dark {
@@ -25,7 +25,7 @@
 @layer base {
   * { @apply border-border outline-ring/50; }
   html { @apply font-sans; }
-  body { @apply bg-background text-foreground; letter-spacing: -.008em; }
+  body { @apply bg-background text-foreground; font-weight: 450; letter-spacing: -.008em; }
   button, input, textarea, select, table { font-family: var(--font-ui); letter-spacing: normal; }
   h1, h2, h3 { font-weight: 500; }
   button { cursor: pointer; }
@@ -53,6 +53,30 @@
 .chat-assistant {
   animation: chat-assistant-in .52s .16s cubic-bezier(.2,.75,.25,1) both;
   transform-origin: 0 0;
+}
+/* Quick-action results use the same conversational rail as typed messages. */
+section.space-y-4 > div:not(:first-child),
+.chat-thread > .chat-assistant.rounded-\[22px\] {
+  margin-left: 2.75rem;
+  position: relative;
+}
+section.space-y-4 > div:nth-child(2)::before,
+.chat-thread > .chat-assistant.rounded-\[22px\]::before {
+  align-items: center;
+  background: var(--primary);
+  border-radius: 999px;
+  color: white;
+  content: "✦";
+  display: flex;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  height: 2rem;
+  justify-content: center;
+  left: -2.75rem;
+  position: absolute;
+  top: 0;
+  width: 2rem;
+  box-shadow: 0 2px 8px rgba(38,54,44,.12);
 }
 @keyframes chat-user-in {
   from { opacity: 0; transform: translate3d(0, 18px, 0); }
