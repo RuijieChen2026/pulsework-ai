@@ -33,6 +33,7 @@
 .icon-mint { background: #e5f3eb; color: #32704d; }
 .icon-violet { background: #eeeafa; color: #6955a7; }
 .icon-amber { background: #f8edd9; color: #a46827; }
+.font-ui { font-family: var(--font-ui); letter-spacing: normal; }
 ::selection { background: #cadccd; color: #193122; }
 .workplace-map {
   background-color: #e7eee8;
