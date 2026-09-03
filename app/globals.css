@@ -36,6 +36,22 @@
 
 .case-card { transform-style: preserve-3d; will-change: transform; }
 .case-card > * { transform: translateZ(12px); }
+.chat-user {
+  animation: chat-user-in .46s cubic-bezier(.2,.75,.25,1) both;
+  transform-origin: 100% 100%;
+}
+.chat-assistant {
+  animation: chat-assistant-in .52s .16s cubic-bezier(.2,.75,.25,1) both;
+  transform-origin: 0 0;
+}
+@keyframes chat-user-in {
+  from { opacity: 0; transform: translate3d(18px, 18px, 0) scale(.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+@keyframes chat-assistant-in {
+  from { opacity: 0; transform: translate3d(-12px, 14px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
 .cow-stage { transform-origin: 50% 90%; }
 .cow-rig {
   animation: cow-breathe 3.8s cubic-bezier(.45, 0, .55, 1) infinite;
@@ -58,6 +74,7 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .case-card { transform: none !important; transition: none !important; }
+  .chat-user, .chat-assistant { animation: none !important; }
   .cow-rig, .cow-rig-jaw { animation: none !important; }
 }
 @media (max-width: 640px) {
