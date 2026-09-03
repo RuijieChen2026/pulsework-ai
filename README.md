@@ -1,6 +1,6 @@
 # PulseWork · 企业通用 AI 工作助手
 
-![PulseWork 产品预览](https://github.com/RuijieChen2026/pulsework-ai/blob/main/assets/pulsework-product-overview.png?raw=true)
+![PulseWork 产品概览](./assets/product-overview.png)
 
 **[体验在线 Demo](https://pulsework-ai-portfolio.zoe00010.chatgpt.site/)**
 
