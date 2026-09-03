@@ -214,7 +214,7 @@ function AgentRun({ scenario, query, approved, onApprove, onReset }: { scenario:
   ];
   return <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
     <div className="flex items-center justify-between"><div><div className="text-xs font-semibold uppercase tracking-[.16em] text-muted-foreground">Live agent trace</div><h1 className="mt-2 text-3xl font-semibold tracking-[-.04em]">任务执行记录</h1></div><Button onClick={onReset} variant="outline" className="rounded-xl"><RotateCcw /> 重新体验</Button></div>
-    <div className="mt-7 grid gap-5 lg:grid-cols-[260px_minmax(0,1fr)]">
+<div className="mt-7 grid gap-5">
       <CollapsibleTrace steps={trace} duration="4.8s"/>
       <section className="chat-thread flex flex-col">
         <div className="chat-user ml-auto flex max-w-[78%] items-start gap-3"><div className="rounded-[20px] rounded-tr-md bg-[#e3ebe5] px-4 py-3 text-sm leading-6">{query}</div><div className="grid size-8 shrink-0 place-items-center rounded-full bg-[#dbe7df] font-ui text-[10px] font-semibold text-[#2d4638]">RC</div></div>

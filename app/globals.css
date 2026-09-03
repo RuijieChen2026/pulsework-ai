@@ -35,6 +35,8 @@
 .icon-amber { background: #f8edd9; color: #a46827; }
 .font-ui { font-family: var(--font-ui); letter-spacing: normal; }
 ::selection { background: #cadccd; color: #193122; }
+div:has(> aside + section.space-y-4) { grid-template-columns: minmax(0, 1fr) !important; }
+div:has(> aside + section) > aside { justify-self: start; width: min(260px, 100%); }
 .workplace-map {
   background-color: #e7eee8;
   background-image:
@@ -58,6 +60,7 @@
 section.space-y-4 > div:not(:first-child),
 .chat-thread > .chat-assistant.rounded-\[22px\] {
   margin-left: 2.75rem;
+  max-width: calc(100% - 2.75rem);
   position: relative;
 }
 section.space-y-4 > div:nth-child(2)::before,
