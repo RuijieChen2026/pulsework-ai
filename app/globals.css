@@ -63,6 +63,13 @@ section.space-y-4 > div:not(:first-child),
   max-width: calc(100% - 2.75rem);
   position: relative;
 }
+.chat-thread > .chat-assistant.ml-12 {
+  margin-left: 2.75rem !important;
+  max-width: calc(100% - 2.75rem);
+}
+.chat-thread > .chat-assistant.rounded-\[22px\] > div:first-child > div:first-child {
+  display: none;
+}
 section.space-y-4 > div:nth-child(2)::before,
 .chat-thread > .chat-assistant.rounded-\[22px\]::before {
   align-items: center;
