@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, ArrowRight, ArrowUp, BarChart3, BookOpen, Bot, BrainCircuit, Building2, Check, CheckCircle2, ChevronDown, CircleDot, Clock3, Coffee, Command, Database, Eye, FileCheck2, FileText, Gauge, GitBranch, HomeIcon, LayoutGrid, LockKeyhole, MapPinned, MessageSquareText, MoreHorizontal, Navigation, Play, Plus, Receipt, RotateCcw, Search, ShieldCheck, Sparkles, Target, TrainFront, UserCheck, Users, Workflow, X } from 'lucide-react';
+import { AlertTriangle, ArrowRight, ArrowUp, BarChart3, BookOpen, Bot, BrainCircuit, Building2, Check, CheckCircle2, ChevronDown, CircleDot, Clock3, Coffee, Command, Database, Eye, FileCheck2, FileText, Gauge, GitBranch, HomeIcon, LayoutGrid, LockKeyhole, MapPinned, MessageSquareText, MoreHorizontal, Navigation, Plus, Receipt, RotateCcw, Search, ShieldCheck, Sparkles, Target, TrainFront, UserCheck, Users, Workflow, X } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -74,11 +74,6 @@ export default function Home() {
               </button>
             ))}
           </div>
-          <button onClick={() => { setScenario('expense'); setQuery('我明天去深圳出差，这张 680 元的酒店发票能报销吗？可以的话帮我提交。'); setSent(true); }} className="mt-4 flex w-full items-center gap-4 rounded-2xl border border-[#c9d8ce] bg-[#eaf1ec] p-4 text-left transition hover:border-primary/35 hover:bg-[#e3ede6]">
-            <div className="grid size-10 shrink-0 place-items-center rounded-full bg-primary text-white"><Play className="ml-0.5 size-4 fill-current" /></div>
-            <div><div className="text-sm font-semibold text-[#294536]">体验完整 Agent 流程</div><div className="mt-0.5 text-xs text-[#5d7465]">从政策检索、发票核验到人工确认提交 · 约 30 秒</div></div>
-            <ArrowRight className="ml-auto size-4 text-primary" />
-          </button>
           </>}
           {!sent && <>
           <div className="mt-6 rounded-[22px] border border-border bg-white p-2 shadow-[0_18px_70px_rgba(38,54,44,.10)] focus-within:border-primary/35 focus-within:ring-4 focus-within:ring-primary/5">
